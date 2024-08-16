@@ -1,0 +1,56 @@
+{
+   "locations": [
+        {
+            "city": "Varenna",
+            "country": "Italy",
+            "food": "fish",
+            "wine": "",
+            "pointsOfInterest": []
+        },
+        {
+            "city": "Riomaggiore",
+            "country": "Italy",
+            "food": "anchovies and pesto",
+            "wine": "",
+            "pointsOfInterest": []
+        },
+        {
+            "city": "Vernazza",
+            "country": "Italy",
+            "food": "anchovies, pesto, gelato, focaccia",
+            "wine": "",
+            "pointsOfInterest": []
+        },
+        {
+            "city": "Corniglia",
+            "country": "Italy",
+            "food": "anchovies, pesto, gelato, focaccia",
+            "wine": "",
+            "pointsOfInterest": []
+        },
+        {
+
+            "city": "Firenze",
+            "country": "Italy",
+            "food": "Bistecca a'la Fiurentino",
+            "wine": "",
+            "pointsOfInterest": []
+        },
+        {
+
+            "city": "Montepulciano",
+            "country": "Italy",
+            "food": "",
+            "wine": "Montepulciano",
+            "pointsOfInterest": []
+        },
+        {
+
+            "city": "Montalcino",
+            "country": "Italy",
+            "food": "",
+            "wine": "Brunello di Montalcino",
+            "pointsOfInterest": []
+        }
+    ]
+}
