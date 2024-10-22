@@ -2,6 +2,7 @@ package locations
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -11,24 +12,25 @@ import (
 
 func getLocationsByCountry(country string) []models.Location {
 
-	var matchingPlaces []models.Location
+	var filtered []models.Location
 
 	places := readFileLocations().Places
 
 	for _, place := range places {
 		if strings.EqualFold(place.Country, country) {
 
-			matchingPlaces = append(matchingPlaces, place)
+			fmt.Println(place.String())
+			filtered = append(filtered, place)
 
 		}
 	}
-	return matchingPlaces
+	return filtered
 
 }
 
 func readFileLocations() models.Locations {
 
-	var filePath = "../data/locations.json"
+	var filePath = "../../data/locations.json"
 	data, err := os.ReadFile(filePath)
 
 	if err != nil {
