@@ -6,10 +6,12 @@
             "food": "fish",
             "wine": "",
             "pointsOfInterest":
+            [
                 {
                     "name": "",
                     "description": ""
                 }
+            ]
             
         },
         {
@@ -18,10 +20,12 @@
             "food": "anchovies and pesto",
             "wine": "",
             "pointsOfInterest":
+            [
                 {
                     "name": "",
                     "description": ""
                 }
+            ]
             
         },
         {
@@ -30,10 +34,12 @@
             "food": "anchovies, pesto, gelato, focaccia",
             "wine": "",
             "pointsOfInterest":
+            [
                 {
                     "name": "",
                     "description": ""
                 }
+            ]
             
         },
         {
@@ -42,22 +48,24 @@
             "food": "anchovies, pesto, gelato, focaccia",
             "wine": "",
             "pointsOfInterest": 
+            [
                 {
                     "name": "",
                     "description": ""
                 }
-            
+            ]
         },
         {
             "city": "Firenze",
             "country": "Italy",
             "food": "Bistecca a'la Fiurentino",
             "wine": "",
-            "pointsOfInterest":
+            "pointsOfInterest":[
                 {
                     "name": "",
                     "description": ""
                 }
+            ]
             
         },
         {
@@ -65,30 +73,34 @@
             "country": "Italy",
             "food": "",
             "wine": "Montepulciano",
-            "pointsOfInterest":{
-                "name": "",
-                "description": ""
-            }
+            "pointsOfInterest":[
+                {
+                    "name": "",
+                    "description": ""
+                }
+            ]
         },
         {
             "city": "Montalcino",
             "country": "Italy",
             "food": "",
             "wine": "Brunello di Montalcino",
-            "pointsOfInterest":{
-                "name": "",
-                "description": ""
-            }
+            "pointsOfInterest":[
+                {
+                    "name": "",
+                    "description": ""
+                }
+            ]
         }
         , {
             "city": "Pula",
             "country": "Croatia",
-            "food": "",
+            "food": "Konoba",
             "wine": "Malvasia",
-            "pointsOfInterest":{
+            "pointsOfInterest":[{
                 "name": "Pula Colosseum",
                 "description": "Best preserved Roman colosseum from the venitian empire"
-            }
+            }]
         }
     ]
 }
