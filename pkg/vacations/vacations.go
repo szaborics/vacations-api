@@ -1,4 +1,4 @@
-package locations
+package vacations
 
 import (
 	"encoding/json"
@@ -10,11 +10,11 @@ import (
 	"github.com/szaborics/vacations-api/models"
 )
 
-func getLocationsByCountry(country string) []models.Location {
+func getVacationsByCountry(country string) []models.VacationDTO {
 
-	var filtered []models.Location
+	var filtered []models.VacationDTO
 
-	places := readFileLocations().Places
+	places := readFileVacations().Places
 
 	for _, place := range places {
 		if strings.EqualFold(place.Country, country) {
@@ -28,9 +28,9 @@ func getLocationsByCountry(country string) []models.Location {
 
 }
 
-func readFileLocations() models.Locations {
+func readFileVacations() models.VacationsDTO {
 
-	var filePath = "../../data/locations.json"
+	var filePath = "../../data/vacations.json"
 	data, err := os.ReadFile(filePath)
 
 	if err != nil {
@@ -38,13 +38,13 @@ func readFileLocations() models.Locations {
 
 	}
 
-	var locations models.Locations
-	err = json.Unmarshal(data, &locations)
+	var vacations models.VacationsDTO
+	err = json.Unmarshal(data, &vacations)
 
 	if err != nil {
 		log.Fatalf("error parsing JSON %v", err)
 	}
 
-	return locations
+	return vacations
 
 }

@@ -1,4 +1,4 @@
-package locations
+package vacations
 
 import (
 	"fmt"
@@ -8,14 +8,14 @@ import (
 	"github.com/szaborics/vacations-api/models"
 )
 
-func TestGetLocationsByCountry(t *testing.T) {
+func TestGetVacationsByCountry(t *testing.T) {
 	//mock data
 	poi1 := models.POI{
 		Name:        "Pula Colosseum",
 		Description: "Best preserved Roman colosseum from the venitian empire",
 	}
 
-	mockLocation := models.Location{
+	mockLocation := models.VacationDTO{
 		City:             "Pula",
 		Country:          "Croatia",
 		Food:             "Konoba",
@@ -23,11 +23,11 @@ func TestGetLocationsByCountry(t *testing.T) {
 		PointsOfInterest: []models.POI{poi1},
 	}
 
-	mockData := models.Locations{
-		Places: []models.Location{mockLocation},
+	mockData := models.VacationsDTO{
+		Places: []models.VacationDTO{mockLocation},
 	}
 
-	got := getLocationsByCountry("croatia")
+	got := getVacationsByCountry("croatia")
 	want := mockData.Places
 
 	if !reflect.DeepEqual(got, want) {
@@ -37,8 +37,8 @@ func TestGetLocationsByCountry(t *testing.T) {
 
 }
 
-func TestReadFileLocations(t *testing.T) {
-	got := readFileLocations()
+func TestReadFileVacations(t *testing.T) {
+	got := readFileVacations()
 
 	fmt.Println(got)
 }
