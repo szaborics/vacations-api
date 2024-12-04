@@ -1,18 +1,16 @@
 package main
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
+// import "github.com/szaborics/vacations-api/database"
 
-	"github.com/szaborics/vacations-api/database"
-	"github.com/szaborics/vacations-api/models"
-)
+// "log"
+// "net/http"
 
-
+// "github.com/szaborics/vacations-api/server"
 
 func main() {
-	database.MongodbConnect()
 
+	// handler := http.HandlerFunc(server.VacationsServer)
+	// log.Fatal(http.ListenAndServe(":5000", handler))
+
+	// database.GetAllVacations()
 }
