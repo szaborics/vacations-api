@@ -36,10 +36,10 @@ type VacationDAO struct {
 	PointsOfInterest []POI              `bson:"pointsOfInterest"`
 }
 
-//VacationFilter ...
+// VacationFilter ...
 type VacationFilter struct {
 	Country string
-	City string
+	City    string
 }
 
 func (v VacationDTO) String() string {
