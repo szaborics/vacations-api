@@ -52,7 +52,7 @@ func validateCountResults(t testing.TB, got int64, want int64, err error) {
 
 }
 
-func validateResults(t testing.TB, got *[]models.VacationDAO, want *[]models.VacationDAO, err error) {
+func validateResults(t testing.TB, got []models.VacationDAO, want []models.VacationDAO, err error) {
 	t.Helper()
 	if err != nil {
 		t.Errorf("results failed to be retrieved %v", err)
@@ -96,7 +96,97 @@ func TestGetFilteredVacations(t *testing.T) {
 				PointsOfInterest: mockPOI,
 			}}
 
-		validateResults(t, &got, &want, err)
+		validateResults(t, got, want, err)
+
+	})
+}
+
+func TestInsertVacation(t *testing.T) {
+	t.Run("test inserting a vacation to the vacations collection", func(t *testing.T) {
+
+		id, err := primitive.ObjectIDFromHex("000000000000000000000000")
+		if err != nil {
+			t.Errorf("Failed to initialize ID")
+		}
+
+		mockPOI := []models.POI{{
+			Name:        "test POI name",
+			Description: "test POI Description",
+		}}
+
+		vacation := models.VacationDAO{
+			ID:               id,
+			City:             "Test city",
+			Country:          "test country",
+			Food:             "test food",
+			Wine:             "test wine",
+			PointsOfInterest: mockPOI,
+		}
+
+		ctx := context.Background()
+
+		_, err = db.InsertVacation(ctx, vacation)
+
+		if err != nil {
+			t.Errorf("Failed to insert vacation: %v", err)
+		}
+
+	})
+
+}
+func TestDeleteVacationByID(t *testing.T) {
+
+	t.Run("Tests deleting a single vacation document from the vacations collection", func(t *testing.T) {
+		ctx := context.Background()
+		id := "000000000000000000000000"
+
+		want := int64(1)
+
+		got, err := db.DeleteVacationByID(ctx, id)
+		if err != nil {
+			t.Fatalf("Failed to delete Vacation with id %s, error: %v", id, err)
+		}
+
+		if got != want {
+			t.Errorf("The deleted count does not match expected, got %b, want %b", got, want)
+		}
+
+	})
+}
+
+func TestGetVacationByID(t *testing.T) {
+
+	t.Run("Tests deleting a single vacation document from the vacations collection", func(t *testing.T) {
+		ctx := context.Background()
+		id := "6750a4e3454002bdba7e9bf8"
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			t.Fatalf("failed to set oid %v", err)
+		}
+
+		mockPOI := []models.POI{{
+			Name:        "test POI name",
+			Description: "test POI Description",
+		}}
+
+		vacation := &models.VacationDAO{
+			ID:               oid,
+			City:             "Test city",
+			Country:          "test country",
+			Food:             "test food",
+			Wine:             "test wine",
+			PointsOfInterest: mockPOI,
+		}
+
+		want := vacation
+		got, err := db.GetVacationByID(ctx, id)
+		if err != nil {
+			t.Fatalf("Failed to get Vacation with id %s, error: %v", id, err)
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf(" got %v, wanted %v", got, want)
+		}
 
 	})
 }
