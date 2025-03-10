@@ -41,7 +41,11 @@ func (db *MongoDB) getQueryFilter(filter *models.VacationFilter) bson.M {
 
 // GetVacationCount gets the filtered count of vacations from the database
 func (db *MongoDB) GetVacationCount(ctx context.Context, filter *models.VacationFilter) (int64, error) {
-	collection := MongodbConnect(DATABASE, COLLECTION)
+	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
+	if err != nil {
+		return 0, err
+	}
+
 	query := db.getQueryFilter(filter)
 
 	count, err := collection.CountDocuments(ctx, query)
@@ -49,7 +53,7 @@ func (db *MongoDB) GetVacationCount(ctx context.Context, filter *models.Vacation
 		return 0, err
 	}
 
-	defer collection.Database().Client().Disconnect(ctx)
+	// defer collection.Database().Client().Disconnect(ctx)
 
 	return count, err
 }
@@ -57,7 +61,10 @@ func (db *MongoDB) GetVacationCount(ctx context.Context, filter *models.Vacation
 // GetFilteredVacations gets the filtered vacations from the database
 func (db *MongoDB) GetFilteredVacations(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDAO, error) {
 	var vacations []models.VacationDAO
-	collection := MongodbConnect(DATABASE, COLLECTION)
+	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
+	if err != nil {
+		return nil, err
+	}
 
 	query := db.getQueryFilter(filter)
 
@@ -76,7 +83,10 @@ func (db *MongoDB) GetFilteredVacations(ctx context.Context, filter *models.Vaca
 func (db *MongoDB) GetAllVacations(ctx context.Context) (*[]models.VacationDAO, error) {
 
 	var vacations []models.VacationDAO
-	collection := MongodbConnect(DATABASE, COLLECTION)
+	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
+	if err != nil {
+		return nil, err
+	}
 
 	cur, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
@@ -92,7 +102,11 @@ func (db *MongoDB) GetAllVacations(ctx context.Context) (*[]models.VacationDAO, 
 // InsertVacation inserts one new vacation to the vacations collection
 func (db *MongoDB) InsertVacation(ctx context.Context, vacation models.VacationDAO) (primitive.ObjectID, error) {
 
-	collection := MongodbConnect(DATABASE, COLLECTION)
+	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
 	vacation.ID = primitive.NewObjectID()
 
 	res, err := collection.InsertOne(ctx, vacation)
@@ -118,9 +132,12 @@ func (db *MongoDB) DeleteVacationByID(ctx context.Context, vacationID string) (i
 	}
 	query := bson.M{"_id": id}
 
-	collection := MongodbConnect(DATABASE, COLLECTION)
+	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
+	if err != nil {
+		return 0, err
+	}
 	res, err := collection.DeleteOne(ctx, query)
-	fmt.Printf("function ID %v", vacationID)
+	fmt.Printf("deleted vacation %v", vacationID)
 	if err != nil {
 		return 0, err
 	}
@@ -139,7 +156,10 @@ func (db *MongoDB) GetVacationByID(ctx context.Context, vacationID string) (*mod
 
 	fmt.Printf("query %v", query)
 
-	collection := MongodbConnect(DATABASE, COLLECTION)
+	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
+	if err != nil {
+		return nil, err
+	}
 	err = collection.FindOne(ctx, bson.M{"_id": id}).Decode(&vacation)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
