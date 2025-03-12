@@ -53,7 +53,6 @@ func (db *MongoDB) GetVacationCount(ctx context.Context, filter *models.Vacation
 		return 0, err
 	}
 
-	// defer collection.Database().Client().Disconnect(ctx)
 
 	return count, err
 }
