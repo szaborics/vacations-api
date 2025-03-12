@@ -1,0 +1,196 @@
+openapi: 3.0.1
+info:
+  title: Vacations API
+  description: The vacations api service provides an API for interfacing with Richi's vacations entities.
+  version: 1.0.0
+servers: 
+  - url: http://localhost:8080/v1
+    description: local server
+paths:
+  /vacations:
+    get:
+      summary: Get a list of vacations
+      description: Returns the list of all vacations, can be filtered by country or city
+      parameters:
+        - name: country
+          in: query
+          description: the country defined on the vacation object
+          required: false
+          schema:
+            type: string
+        - name: city
+          in: query
+          description: the city defined on the vacation object
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of vacations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Vacations'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+    post:
+      summary: Create a vacation.
+      description: Creates a new vacation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vacation'
+      responses:
+        '201':
+          description: "Vacation created successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vacation'
+  /vacations/{vacationId}:
+    get:
+      summary: Get a vacation by ID
+      description: Returns a single vacation by their ID
+      parameters:
+        - name: vacationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A single vacation
+          content:
+            application/json:
+              schema:
+                type: string
+                items: 
+                  $ref: '#/components/schemas/Vacation'
+        '404':
+          description: Vacation not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "User not found"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "bad request"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+    delete:
+      summary: Delete a vacation by ID
+      description: deletes a single vacation by their ID.
+      parameters:
+        - name: vacationId
+          in: path
+          required: true
+          description: the ID of the vacation to delete.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Vacation deleted successfully
+        '404':
+          description: Vacation not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "User not found"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "bad request"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+
+components:
+  schemas:
+    Vacations:
+      type: object
+      properties:
+        places:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vacation'
+
+    Vacation:
+      type: object
+      properties:
+        city:
+          type: string
+        country:
+          type: string
+        food:
+          type: string
+        wine:
+          type: string
+        pointsOfInterest: 
+          type: array
+        items: 
+          $ref: '#/components/schemas/POI'
+      required:
+        - country
+        - city
+        - food
+        - wine
+        - pointsOfInterest
+
+    POI:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - description
