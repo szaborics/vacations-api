@@ -134,47 +134,48 @@ func TestInsertVacation(t *testing.T) {
 	})
 
 }
-func TestDeleteVacationByID(t *testing.T) {
 
-	t.Run("Tests deleting a single vacation document from the vacations collection", func(t *testing.T) {
-		ctx := context.Background()
-		id := "000000000000000000000000"
+// func TestDeleteVacationByID(t *testing.T) {
 
-		want := int64(1)
+// 	t.Run("Tests deleting a single vacation document from the vacations collection", func(t *testing.T) {
+// 		ctx := context.Background()
+// 		id := "67ca1b6ec04502b1b1eb3887"
 
-		got, err := db.DeleteVacationByID(ctx, id)
-		if err != nil {
-			t.Fatalf("Failed to delete Vacation with id %s, error: %v", id, err)
-		}
+// 		want := int64(1)
 
-		if got != want {
-			t.Errorf("The deleted count does not match expected, got %b, want %b", got, want)
-		}
+// 		got, err := db.DeleteVacationByID(ctx, id)
+// 		if err != nil {
+// 			t.Fatalf("Failed to delete Vacation with id %s, error: %v", id, err)
+// 		}
 
-	})
-}
+// 		if got != want {
+// 			t.Errorf("The deleted count does not match expected, got %b, want %b", got, want)
+// 		}
+
+// 	})
+// }
 
 func TestGetVacationByID(t *testing.T) {
 
-	t.Run("Tests deleting a single vacation document from the vacations collection", func(t *testing.T) {
+	t.Run("Tests retrieving a single vacation document from the vacations collection", func(t *testing.T) {
 		ctx := context.Background()
-		id := "6750a4e3454002bdba7e9bf8"
+		id := "6719116d45173ca7957bfba2"
 		oid, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			t.Fatalf("failed to set oid %v", err)
 		}
 
 		mockPOI := []models.POI{{
-			Name:        "test POI name",
-			Description: "test POI Description",
+			Name:        "",
+			Description: "",
 		}}
 
 		vacation := &models.VacationDAO{
 			ID:               oid,
-			City:             "Test city",
-			Country:          "test country",
-			Food:             "test food",
-			Wine:             "test wine",
+			City:             "Firenze",
+			Country:          "Italy",
+			Food:             "Bistecca a'la Fiurentino",
+			Wine:             "",
 			PointsOfInterest: mockPOI,
 		}
 

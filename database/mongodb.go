@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -37,8 +36,20 @@ func GetDatabase() Database {
 	return db
 }
 
-// MongodbConnect ...
-func MongodbConnect(db string, col string) *mongo.Collection {
+var onceDbClient sync.Once
+var dbClient *mongo.Collection
+
+// GetNoCloseClientCollection Creates a thread safe connection and returns the collection specified
+func GetNoCloseClientCollection(db string, col string) (*mongo.Collection, error) {
+	var err error
+	onceDbClient.Do(func() {
+		dbClient, err = mongodbConnect(db, col)
+	})
+	return dbClient, err
+}
+
+// MongodbConnect connects to mongodb usign the specified database and collection parameters and returns the collection object of the client
+func mongodbConnect(db string, col string) (*mongo.Collection, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -55,15 +66,10 @@ func MongodbConnect(db string, col string) *mongo.Collection {
 
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		panic(err)
-	}
-
-	// Send a ping to confirm a successful connection
-	if err := client.Database(db).RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	collection := client.Database(db).Collection(col)
-	return collection
+	return collection, nil
 
 }
