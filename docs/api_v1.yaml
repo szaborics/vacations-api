@@ -3,14 +3,21 @@ info:
   title: Vacations API
   description: The vacations api service provides an API for interfacing with Richi's vacations entities.
   version: 1.0.0
-servers: 
+servers:
   - url: http://localhost:8080/v1
     description: local server
+tags: 
+  - name: vacation
+    description: Everything about my vacations
+security: []
 paths:
   /vacations:
     get:
+      tags: 
+        - vacation
       summary: Get a list of vacations
       description: Returns the list of all vacations, can be filtered by country or city
+      operationId: getVacations
       parameters:
         - name: country
           in: query
@@ -31,19 +38,24 @@ paths:
             application/json:
               schema:
                 type: array
-                items: 
-                  $ref: '#/components/schemas/Vacations'
+                items:
+                  $ref: '#/components/schemas/Vacation' 
+        '400':
+          description: Bad request
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Error' 
         '500':
           description: Internal Server Error
           content:
-            application/json:
+            application/json: 
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
+                $ref: '#/components/schemas/Error' 
     post:
+      tags: 
+        - vacation
+      operationId: createVacation
       summary: Create a vacation.
       description: Creates a new vacation.
       requestBody:
@@ -59,13 +71,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vacation'
+        '400':
+          description: Bad request
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Error' 
   /vacations/{vacationId}:
     get:
+      tags: 
+        - vacation
       summary: Get a vacation by ID
       description: Returns a single vacation by their ID
+      operationId: getVacationByID
       parameters:
         - name: vacationId
           in: path
+          description: ID of the vacation
           required: true
           schema:
             type: string
@@ -75,47 +97,36 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                items: 
-                  $ref: '#/components/schemas/Vacation'
+                $ref: '#/components/schemas/Vacation' 
         '404':
           description: Vacation not found
           content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      example: "User not found"
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Error' 
         '400':
           description: Bad request
           content:
-            application/json:
+            application/json: 
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "bad request"
+                $ref: '#/components/schemas/Error' 
         '500':
           description: Internal Server Error
           content:
-            application/json:
+            application/json: 
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
+                $ref: '#/components/schemas/Error' 
     delete:
+      tags: 
+        - vacation
       summary: Delete a vacation by ID
       description: deletes a single vacation by their ID.
+      operationId: deleteVacation
       parameters:
         - name: vacationId
           in: path
-          required: true
           description: the ID of the vacation to delete.
+          required: true
           schema:
             type: string
       responses:
@@ -124,44 +135,24 @@ paths:
         '404':
           description: Vacation not found
           content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      example: "User not found"
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Error' 
         '400':
           description: Bad request
           content:
-            application/json:
+            application/json: 
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "bad request"
+                $ref: '#/components/schemas/Error' 
         '500':
           description: Internal Server Error
           content:
-            application/json:
+            application/json: 
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
+                $ref: '#/components/schemas/Error' 
 
 components:
   schemas:
-    Vacations:
-      type: object
-      properties:
-        places:
-          type: array
-          items:
-            $ref: '#/components/schemas/Vacation'
-
     Vacation:
       type: object
       properties:
@@ -173,17 +164,16 @@ components:
           type: string
         wine:
           type: string
-        pointsOfInterest: 
+        pointsOfInterest:
           type: array
-        items: 
-          $ref: '#/components/schemas/POI'
+          items: 
+            $ref: '#/components/schemas/POI'
       required:
         - country
         - city
         - food
         - wine
         - pointsOfInterest
-
     POI:
       type: object
       properties:
@@ -194,3 +184,13 @@ components:
       required:
         - name
         - description
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message

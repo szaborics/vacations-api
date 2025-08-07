@@ -1,50 +1,81 @@
-package vacations
+package services
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
-	"strings"
+	"context"
 
+	"github.com/szaborics/vacations-api/database"
 	"github.com/szaborics/vacations-api/models"
 )
 
-func getVacationsByCountry(country string) []models.VacationDTO {
+// VacationService manages vacations
+type VacationService interface {
+	Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error)
+}
 
-	var filtered []models.VacationDTO
+// VacationServiceImpl implements VacationsService
+type VacationServiceImpl struct {
+	database database.Database
+}
 
-	places := readFileVacations().Places
+var _ VacationService = (*VacationServiceImpl)(nil)
 
-	for _, place := range places {
-		if strings.EqualFold(place.Country, country) {
-
-			fmt.Println(place.String())
-			filtered = append(filtered, place)
-
-		}
+func newVacationService() VacationService {
+	database := database.GetDatabase()
+	return &VacationServiceImpl{
+		database: database,
 	}
-	return filtered
+}
+
+// Get retreives a list of filtered vacations, if there is no filter, it returns all
+func (service *VacationServiceImpl) Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error) {
+
+	vacationsDAO, err := service.database.GetFilteredVacations(ctx, filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	vacationsDTOs := models.DAOsToDTOs(vacationsDAO)
+
+	return vacationsDTOs, nil
 
 }
 
-func readFileVacations() models.VacationsDTO {
+// func getVacationsByCountry(country string) []models.VacationDTO {
 
-	var filePath = "../../data/vacations.json"
-	data, err := os.ReadFile(filePath)
+// 	var filtered []models.VacationDTO
 
-	if err != nil {
-		log.Fatalf("Error reading file: %v", err)
+// 	places := readFileVacations().Places
 
-	}
+// 	for _, place := range places {
+// 		if strings.EqualFold(place.Country, country) {
 
-	var vacations models.VacationsDTO
-	err = json.Unmarshal(data, &vacations)
+// 			fmt.Println(place.String())
+// 			filtered = append(filtered, place)
 
-	if err != nil {
-		log.Fatalf("error parsing JSON %v", err)
-	}
+// 		}
+// 	}
+// 	return filtered
 
-	return vacations
+// }
 
-}
+// func readFileVacations() models.VacationsDTO {
+
+// 	var filePath = "../../data/vacations.json"
+// 	data, err := os.ReadFile(filePath)
+
+// 	if err != nil {
+// 		log.Fatalf("Error reading file: %v", err)
+
+// 	}
+
+// 	var vacations models.VacationsDTO
+// 	err = json.Unmarshal(data, &vacations)
+
+// 	if err != nil {
+// 		log.Fatalf("error parsing JSON %v", err)
+// 	}
+
+// 	return vacations
+
+// }

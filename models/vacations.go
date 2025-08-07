@@ -57,3 +57,23 @@ func vacationsToString(vacations []VacationDTO) []string {
 	}
 	return vacationStrings
 }
+
+// DAOToDTO translates the database retreived values to the service object
+func DAOToDTO(dao *VacationDAO) VacationDTO {
+	return VacationDTO{
+		City:             dao.City,
+		Country:          dao.Country,
+		Food:             dao.Food,
+		Wine:             dao.Wine,
+		PointsOfInterest: dao.PointsOfInterest,
+	}
+}
+
+// DAOsToDTOs translates multiple DAOs to DTOs
+func DAOsToDTOs(daos []VacationDAO) []VacationDTO {
+	dtos := make([]VacationDTO, len(daos))
+	for i, dao := range daos {
+		dtos[i] = DAOToDTO(&dao)
+	}
+	return dtos
+}

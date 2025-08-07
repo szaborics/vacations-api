@@ -1,4 +1,4 @@
-package vacations
+package services
 
 import (
 	"fmt"
