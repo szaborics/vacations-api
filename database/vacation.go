@@ -13,7 +13,7 @@ import (
 // VacationRepository defines vacation related operations (abstracts database operations allowing for implementation for any database)
 type VacationRepository interface {
 	GetVacationCount(ctx context.Context, filter *models.VacationFilter) (int64, error)
-	GetAllVacations(ctx context.Context) (*[]models.VacationDAO, error)
+	GetAllVacations(ctx context.Context) ([]models.VacationDAO, error)
 	GetFilteredVacations(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDAO, error)
 	InsertVacation(ctx context.Context, vacation models.VacationDAO) (primitive.ObjectID, error)
 	DeleteVacationByID(ctx context.Context, vacationID string) (int64, error)
@@ -26,14 +26,16 @@ const DATABASE = "vacationsApi"
 // COLLECTION variable defines the mongo collection to execute CRUD operations against
 const COLLECTION = "vacations"
 
-func (db *MongoDB) getQueryFilter(filter *models.VacationFilter) bson.M {
-	query := bson.M{}
+func (db *MongoDB) getQueryFilter(filter *models.VacationFilter) bson.D {
+
+	query := bson.D{}
 
 	if filter.City != "" {
-		query["city"] = filter.City
+		query = append(query, bson.E{Key: "city", Value: filter.City})
 	}
 	if filter.Country != "" {
-		query["country"] = filter.Country
+		query = append(query, bson.E{Key: "country", Value: filter.Country})
+
 	}
 
 	return query
@@ -53,13 +55,13 @@ func (db *MongoDB) GetVacationCount(ctx context.Context, filter *models.Vacation
 		return 0, err
 	}
 
-
 	return count, err
 }
 
 // GetFilteredVacations gets the filtered vacations from the database
 func (db *MongoDB) GetFilteredVacations(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDAO, error) {
 	var vacations []models.VacationDAO
+
 	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
 	if err != nil {
 		return nil, err
@@ -79,7 +81,7 @@ func (db *MongoDB) GetFilteredVacations(ctx context.Context, filter *models.Vaca
 }
 
 // GetAllVacations gets all vacations from the database
-func (db *MongoDB) GetAllVacations(ctx context.Context) (*[]models.VacationDAO, error) {
+func (db *MongoDB) GetAllVacations(ctx context.Context) ([]models.VacationDAO, error) {
 
 	var vacations []models.VacationDAO
 	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
@@ -95,7 +97,7 @@ func (db *MongoDB) GetAllVacations(ctx context.Context) (*[]models.VacationDAO, 
 
 	cur.All(context.Background(), &vacations)
 
-	return &vacations, err
+	return vacations, err
 }
 
 // InsertVacation inserts one new vacation to the vacations collection

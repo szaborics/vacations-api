@@ -1,44 +1,23 @@
 package services
 
 import (
+	"context"
 	"fmt"
-	"reflect"
 	"testing"
-
-	"github.com/szaborics/vacations-api/models"
 )
 
-func TestGetVacationsByCountry(t *testing.T) {
-	//mock data
-	poi1 := models.POI{
-		Name:        "Pula Colosseum",
-		Description: "Best preserved Roman colosseum from the venitian empire",
-	}
+var vacationService = NewVacationService()
 
-	mockLocation := models.VacationDTO{
-		City:             "Pula",
-		Country:          "Croatia",
-		Food:             "Konoba",
-		Wine:             "Malvasia",
-		PointsOfInterest: []models.POI{poi1},
-	}
+func TestGetAll(t *testing.T) {
 
-	mockData := models.VacationsDTO{
-		Places: []models.VacationDTO{mockLocation},
-	}
+	t.Run("Tests getting all vacations from the repository", func(t *testing.T) {
 
-	got := getVacationsByCountry("croatia")
-	want := mockData.Places
+		got, err := vacationService.GetAll(context.Background())
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got \n %v, want \n %v", got, want)
-	}
-	fmt.Println(got)
+		if err != nil {
+			t.Errorf("Failed to get all vacations %v", err.Error())
+		}
+		fmt.Printf("got %v", got)
 
-}
-
-func TestReadFileVacations(t *testing.T) {
-	got := readFileVacations()
-
-	fmt.Println(got)
+	})
 }

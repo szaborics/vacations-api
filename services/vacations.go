@@ -10,6 +10,7 @@ import (
 // VacationService manages vacations
 type VacationService interface {
 	Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error)
+	GetAll(ctx context.Context) ([]models.VacationDTO, error)
 }
 
 // VacationServiceImpl implements VacationsService
@@ -19,17 +20,33 @@ type VacationServiceImpl struct {
 
 var _ VacationService = (*VacationServiceImpl)(nil)
 
-func newVacationService() VacationService {
+// NewVacationService returns implementation of service
+func NewVacationService() VacationService {
 	database := database.GetDatabase()
 	return &VacationServiceImpl{
 		database: database,
 	}
 }
 
-// Get retreives a list of filtered vacations, if there is no filter, it returns all
+// Get retreives a list of all vacations, if there is no filter, it returns all
 func (service *VacationServiceImpl) Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error) {
 
 	vacationsDAO, err := service.database.GetFilteredVacations(ctx, filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	vacationsDTOs := models.DAOsToDTOs(vacationsDAO)
+
+	return vacationsDTOs, nil
+
+}
+
+// GetAll retreives a list of filtered vacations, if there is no filter, it returns all
+func (service *VacationServiceImpl) GetAll(ctx context.Context) ([]models.VacationDTO, error) {
+
+	vacationsDAO, err := service.database.GetAllVacations(ctx)
 
 	if err != nil {
 		return nil, err
