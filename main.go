@@ -1,16 +1,26 @@
 package main
 
-// import "github.com/szaborics/vacations-api/database"
+import (
+	"fmt"
+	"log"
+	"net/http"
 
-// "log"
-// "net/http"
-
-// "github.com/szaborics/vacations-api/server"
+	"github.com/szaborics/vacations-api/controller"
+)
 
 func main() {
 
-	// handler := http.HandlerFunc(server.VacationsServer)
-	// log.Fatal(http.ListenAndServe(":5000", handler))
+	mux := http.NewServeMux()
 
-	// database.GetAllVacations()
+	vacationController := controller.NewVacationController()
+
+	mux.HandleFunc("GET /", vacationController.HandleRoot)
+	mux.HandleFunc("GET /vacations", vacationController.GetFiltered)
+
+	fmt.Println("Vacations API Server Listening on port 8080")
+
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatal("Server failed to start:", err)
+	}
+
 }

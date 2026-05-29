@@ -1,50 +1,43 @@
-package vacations
+package services
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
-	"strings"
+	"context"
 
+	"github.com/szaborics/vacations-api/database"
 	"github.com/szaborics/vacations-api/models"
 )
 
-func getVacationsByCountry(country string) []models.VacationDTO {
-
-	var filtered []models.VacationDTO
-
-	places := readFileVacations().Places
-
-	for _, place := range places {
-		if strings.EqualFold(place.Country, country) {
-
-			fmt.Println(place.String())
-			filtered = append(filtered, place)
-
-		}
-	}
-	return filtered
-
+// VacationService manages vacations
+type VacationService interface {
+	Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error)
 }
 
-func readFileVacations() models.VacationsDTO {
+// VacationServiceImpl implements VacationsService
+type VacationServiceImpl struct {
+	database database.Database
+}
 
-	var filePath = "../../data/vacations.json"
-	data, err := os.ReadFile(filePath)
+var _ VacationService = (*VacationServiceImpl)(nil)
+
+// NewVacationService returns implementation of service
+func NewVacationService() VacationService {
+	database := database.GetDatabase()
+	return &VacationServiceImpl{
+		database: database,
+	}
+}
+
+// Get retreives a list of all vacations, if there is no filter, it returns all
+func (service *VacationServiceImpl) Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error) {
+
+	vacationsDAO, err := service.database.GetFilteredVacations(ctx, filter)
 
 	if err != nil {
-		log.Fatalf("Error reading file: %v", err)
-
+		return nil, err
 	}
 
-	var vacations models.VacationsDTO
-	err = json.Unmarshal(data, &vacations)
+	vacationsDTOs := models.DAOsToDTOs(vacationsDAO)
 
-	if err != nil {
-		log.Fatalf("error parsing JSON %v", err)
-	}
-
-	return vacations
+	return vacationsDTOs, nil
 
 }
