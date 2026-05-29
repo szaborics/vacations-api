@@ -1,196 +1,347 @@
 openapi: 3.0.1
 info:
   title: Vacations API
-  description: The vacations api service provides an API for interfacing with Richi's vacations entities.
+  description: >
+    An API for managing personal vacation destinations.
+    Supports filtering, full CRUD, and returns structured errors with machine-readable codes.
   version: 1.0.0
+
 servers:
-  - url: http://localhost:8080/v1
-    description: local server
-tags: 
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
   - name: vacation
-    description: Everything about my vacations
-security: []
+    description: Vacation destination operations
+  - name: system
+    description: System health and status
+
 paths:
-  /vacations:
+
+  /health:
     get:
-      tags: 
-        - vacation
-      summary: Get a list of vacations
-      description: Returns the list of all vacations, can be filtered by country or city
-      operationId: getVacations
-      parameters:
-        - name: country
-          in: query
-          description: the country defined on the vacation object
-          required: false
-          schema:
-            type: string
-        - name: city
-          in: query
-          description: the city defined on the vacation object
-          required: false
-          schema:
-            type: string
+      tags:
+        - system
+      summary: Health check
+      operationId: healthCheck
+      description: Returns 200 if the server is up. Useful for load balancers and deployment checks.
       responses:
         '200':
-          description: A list of vacations
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+
+  /vacations:
+    get:
+      tags:
+        - vacation
+      summary: List vacations
+      operationId: getVacations
+      description: >
+        Returns all vacations. Optionally filter by `country` and/or `city`.
+        Returns an empty array — not 404 — when no results match the filter.
+      parameters:
+        - $ref: '#/components/parameters/CountryFilter'
+        - $ref: '#/components/parameters/CityFilter'
+      responses:
+        '200':
+          description: A list of vacations (may be empty)
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Vacation' 
-        '400':
-          description: Bad request
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+                  $ref: '#/components/schemas/Vacation'
+              examples:
+                withResults:
+                  summary: Filtered by country
+                  value:
+                    - id: "6719116d45173ca7957bfba5"
+                      city: "Pula"
+                      country: "Croatia"
+                      food: "Konoba"
+                      wine: "Malvasia"
+                      pointsOfInterest:
+                        - name: "Pula Colosseum"
+                          description: "Best preserved Roman colosseum from the Venetian empire"
+                noResults:
+                  summary: No results matched the filter
+                  value: []
         '500':
-          description: Internal Server Error
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+          $ref: '#/components/responses/InternalServerError'
+
     post:
-      tags: 
+      tags:
         - vacation
+      summary: Create a vacation
       operationId: createVacation
-      summary: Create a vacation.
-      description: Creates a new vacation.
+      description: >
+        Creates a new vacation destination.
+        The server assigns the `id` — do not include it in the request body.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Vacation'
+              $ref: '#/components/schemas/VacationInput'
+            example:
+              city: "Pula"
+              country: "Croatia"
+              food: "Konoba"
+              wine: "Malvasia"
+              pointsOfInterest:
+                - name: "Pula Colosseum"
+                  description: "Best preserved Roman colosseum from the Venetian empire"
       responses:
         '201':
-          description: "Vacation created successfully"
+          description: Vacation created — returns the full object with its assigned ID
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vacation'
         '400':
-          description: Bad request
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /vacations/{vacationId}:
+    parameters:
+      - $ref: '#/components/parameters/VacationId'
+
     get:
-      tags: 
+      tags:
         - vacation
       summary: Get a vacation by ID
-      description: Returns a single vacation by their ID
       operationId: getVacationByID
-      parameters:
-        - name: vacationId
-          in: path
-          description: ID of the vacation
-          required: true
-          schema:
-            type: string
       responses:
         '200':
-          description: A single vacation
+          description: The requested vacation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Vacation' 
-        '404':
-          description: Vacation not found
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+                $ref: '#/components/schemas/Vacation'
         '400':
-          description: Bad request
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: Internal Server Error
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
-    delete:
-      tags: 
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
         - vacation
-      summary: Delete a vacation by ID
-      description: deletes a single vacation by their ID.
+      summary: Update a vacation
+      operationId: updateVacation
+      description: >
+        Fully replaces a vacation's fields. This is a full replace, not a partial update —
+        omitted optional fields (food, wine, pointsOfInterest) will be cleared.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VacationInput'
+            example:
+              city: "Pula"
+              country: "Croatia"
+              food: "Konoba"
+              wine: "Malvasia"
+              pointsOfInterest:
+                - name: "Pula Colosseum"
+                  description: "Best preserved Roman colosseum from the Venetian empire"
+      responses:
+        '200':
+          description: Vacation updated — returns the full updated object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vacation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - vacation
+      summary: Delete a vacation
       operationId: deleteVacation
-      parameters:
-        - name: vacationId
-          in: path
-          description: the ID of the vacation to delete.
-          required: true
-          schema:
-            type: string
       responses:
         '204':
-          description: Vacation deleted successfully
-        '404':
-          description: Vacation not found
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+          description: Vacation deleted successfully — no response body
         '400':
-          description: Bad request
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: Internal Server Error
-          content:
-            application/json: 
-              schema:
-                $ref: '#/components/schemas/Error' 
+          $ref: '#/components/responses/InternalServerError'
 
 components:
+
+  parameters:
+
+    VacationId:
+      name: vacationId
+      in: path
+      required: true
+      description: MongoDB ObjectID of the vacation
+      schema:
+        type: string
+      example: "6719116d45173ca7957bfba5"
+
+    CountryFilter:
+      name: country
+      in: query
+      required: false
+      description: Filter by country name (case-sensitive, exact match)
+      schema:
+        type: string
+      example: Italy
+
+    CityFilter:
+      name: city
+      in: query
+      required: false
+      description: Filter by city name (case-sensitive, exact match)
+      schema:
+        type: string
+      example: Pula
+
   schemas:
-    Vacation:
+
+    VacationInput:
       type: object
+      description: >
+        Fields provided when creating or updating a vacation.
+        Only `city` and `country` are required.
+      required:
+        - city
+        - country
       properties:
         city:
           type: string
+          example: Pula
         country:
           type: string
+          example: Croatia
         food:
           type: string
+          example: Konoba
         wine:
           type: string
+          example: Malvasia
         pointsOfInterest:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/POI'
-      required:
-        - country
-        - city
-        - food
-        - wine
-        - pointsOfInterest
+
+    Vacation:
+      allOf:
+        - $ref: '#/components/schemas/VacationInput'
+        - type: object
+          description: A vacation as returned by the API — includes the server-assigned `id`.
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              description: MongoDB ObjectID assigned by the server
+              example: "6719116d45173ca7957bfba5"
+
     POI:
       type: object
+      description: A point of interest at the vacation destination
       properties:
         name:
           type: string
+          example: "Pula Colosseum"
         description:
           type: string
-      required:
-        - name
-        - description
+          example: "Best preserved Roman colosseum from the Venetian empire"
+
     Error:
       type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
+      description: Standard error response. All error responses share this shape.
       required:
         - code
         - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code for programmatic handling
+          enum:
+            - BAD_REQUEST
+            - NOT_FOUND
+            - UNPROCESSABLE_ENTITY
+            - INTERNAL_SERVER_ERROR
+          example: NOT_FOUND
+        message:
+          type: string
+          description: Human-readable explanation of the error
+          example: "Vacation with the specified ID was not found"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+          example: ok
+
+  responses:
+
+    BadRequest:
+      description: >
+        The request was malformed — for example, `vacationId` is not a valid MongoDB ObjectID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: BAD_REQUEST
+            message: "vacationId is not a valid ObjectID"
+
+    NotFound:
+      description: No vacation exists with the specified ID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: "Vacation with the specified ID was not found"
+
+    UnprocessableEntity:
+      description: >
+        The request body was valid JSON but failed validation —
+        for example, a required field like `city` was missing or empty.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNPROCESSABLE_ENTITY
+            message: "city is required"
+
+    InternalServerError:
+      description: An unexpected error occurred on the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: INTERNAL_SERVER_ERROR
+            message: "An unexpected error occurred"

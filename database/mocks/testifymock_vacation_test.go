@@ -1,9 +1,8 @@
-package database
+package mocks
 
 import (
 	"context"
 	"errors"
-
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +14,6 @@ import (
 func TestDeleteVacationByID(t *testing.T) {
 	mockRepo := new(Database)
 
-	// Define test cases
 	tests := []struct {
 		name        string
 		vacationID  string
@@ -45,7 +43,6 @@ func TestDeleteVacationByID(t *testing.T) {
 			name:       "Failure - Invalid Vacation ID",
 			vacationID: "invalid-id",
 			mockSetup: func() {
-				// Simulate the behavior of primitive.ObjectIDFromHex failing
 				mockRepo.On("DeleteVacationByID", mock.Anything, "invalid-id").Return(int64(0), errors.New("failed to initialize objectID: invalid object ID"))
 			},
 			expected:    int64(0),
@@ -55,7 +52,6 @@ func TestDeleteVacationByID(t *testing.T) {
 			name:       "Failure - Database Error",
 			vacationID: "315f5f5f5f5f5f5f5f5f5f5f",
 			mockSetup: func() {
-				// Simulate a database error
 				mockRepo.On("DeleteVacationByID", mock.Anything, "315f5f5f5f5f5f5f5f5f5f5f").Return(int64(0), errors.New("database error"))
 			},
 			expected:    int64(0),
@@ -65,13 +61,10 @@ func TestDeleteVacationByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set up the mock expectations
 			tt.mockSetup()
 
-			// Call the method on the mock
 			deletedCount, err := mockRepo.DeleteVacationByID(context.Background(), tt.vacationID)
 
-			// Assert the results
 			assert.Equal(t, tt.expected, deletedCount)
 			if tt.expectedErr != "" {
 				assert.EqualError(t, err, tt.expectedErr)
@@ -79,7 +72,6 @@ func TestDeleteVacationByID(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			// Verify that the expectations were met
 			mockRepo.AssertExpectations(t)
 		})
 	}
@@ -93,7 +85,7 @@ func TestGetVacationByID(t *testing.T) {
 	}
 
 	mockPOI := []models.POI{{
-		Name:        "Cathedral di Santa Maria, Duomo ",
+		Name:        "Cathedral di Santa Maria, Duomo",
 		Description: "The Domed basilica of Santa Maria del Fiore",
 	}}
 
@@ -113,7 +105,8 @@ func TestGetVacationByID(t *testing.T) {
 		expected    *models.VacationDAO
 		expectedErr error
 	}{
-		{name: "Success - Get Vacation",
+		{
+			name:       "Success - Get Vacation",
 			vacationID: "615f5f5f5f5f5f5f5f5f5f5f",
 			mockSetup: func() {
 				mockRepo.On("GetVacationByID", mock.Anything, "615f5f5f5f5f5f5f5f5f5f5f").Return(mockVacation, nil)
@@ -121,15 +114,17 @@ func TestGetVacationByID(t *testing.T) {
 			expected:    mockVacation,
 			expectedErr: nil,
 		},
-		{name: "Success - No vacation by that ID",
+		{
+			name:       "Failure - Vacation Not Found",
 			vacationID: "515f5f5f5f5f5f5f5f5f5f5f",
 			mockSetup: func() {
-				mockRepo.On("GetVacationByID", mock.Anything, "515f5f5f5f5f5f5f5f5f5f5f").Return(nil, errors.New("Vacation 515f5f5f5f5f5f5f5f5f5f5f not found"))
+				mockRepo.On("GetVacationByID", mock.Anything, "515f5f5f5f5f5f5f5f5f5f5f").Return(nil, errors.New("vacation 515f5f5f5f5f5f5f5f5f5f5f not found"))
 			},
 			expected:    nil,
-			expectedErr: errors.New("Vacation 515f5f5f5f5f5f5f5f5f5f5f not found"),
+			expectedErr: errors.New("vacation 515f5f5f5f5f5f5f5f5f5f5f not found"),
 		},
-		{name: "Failed - Failed to initiate object ID",
+		{
+			name:       "Failure - Invalid Object ID",
 			vacationID: "415f5f5f5f5f5f5f5f5f5f5f",
 			mockSetup: func() {
 				mockRepo.On("GetVacationByID", mock.Anything, "415f5f5f5f5f5f5f5f5f5f5f").Return(nil, errors.New("failed to initialize objectID: invalid object ID"))
@@ -137,7 +132,8 @@ func TestGetVacationByID(t *testing.T) {
 			expected:    nil,
 			expectedErr: errors.New("failed to initialize objectID: invalid object ID"),
 		},
-		{name: "Failed - Failed to initiate object ID",
+		{
+			name:       "Failure - Database Failure",
 			vacationID: "315f5f5f5f5f5f5f5f5f5f5f",
 			mockSetup: func() {
 				mockRepo.On("GetVacationByID", mock.Anything, "315f5f5f5f5f5f5f5f5f5f5f").Return(nil, errors.New("database failure"))
@@ -151,13 +147,14 @@ func TestGetVacationByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockSetup()
 
-			//call the mock function
 			vacation, err := mockRepo.GetVacationByID(context.Background(), tt.vacationID)
 
-			if tt.expected != nil && tt.expectedErr == nil {
+			if tt.expectedErr == nil {
+				assert.NoError(t, err)
 				assert.Equal(t, tt.expected, vacation)
 			} else {
-				assert.EqualError(t, tt.expectedErr, err.Error())
+				assert.EqualError(t, err, tt.expectedErr.Error())
+				assert.Nil(t, vacation)
 			}
 		})
 	}

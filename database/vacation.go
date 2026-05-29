@@ -13,7 +13,6 @@ import (
 // VacationRepository defines vacation related operations (abstracts database operations allowing for implementation for any database)
 type VacationRepository interface {
 	GetVacationCount(ctx context.Context, filter *models.VacationFilter) (int64, error)
-	GetAllVacations(ctx context.Context) ([]models.VacationDAO, error)
 	GetFilteredVacations(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDAO, error)
 	InsertVacation(ctx context.Context, vacation models.VacationDAO) (primitive.ObjectID, error)
 	DeleteVacationByID(ctx context.Context, vacationID string) (int64, error)
@@ -73,31 +72,13 @@ func (db *MongoDB) GetFilteredVacations(ctx context.Context, filter *models.Vaca
 	if err != nil {
 		return nil, err
 	}
-	defer cur.Close((context.Background()))
+	defer cur.Close((ctx))
 
-	cur.All(context.Background(), &vacations)
-
-	return vacations, err
-}
-
-// GetAllVacations gets all vacations from the database
-func (db *MongoDB) GetAllVacations(ctx context.Context) ([]models.VacationDAO, error) {
-
-	var vacations []models.VacationDAO
-	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
-	if err != nil {
+	if err := cur.All(ctx, &vacations); err != nil {
 		return nil, err
 	}
 
-	cur, err := collection.Find(context.Background(), bson.M{})
-	if err != nil {
-		return nil, err
-	}
-	defer cur.Close((context.Background()))
-
-	cur.All(context.Background(), &vacations)
-
-	return vacations, err
+	return vacations, nil
 }
 
 // InsertVacation inserts one new vacation to the vacations collection
@@ -138,10 +119,10 @@ func (db *MongoDB) DeleteVacationByID(ctx context.Context, vacationID string) (i
 		return 0, err
 	}
 	res, err := collection.DeleteOne(ctx, query)
-	fmt.Printf("deleted vacation %v", vacationID)
 	if err != nil {
 		return 0, err
 	}
+
 	return res.DeletedCount, nil
 
 }
@@ -155,13 +136,11 @@ func (db *MongoDB) GetVacationByID(ctx context.Context, vacationID string) (*mod
 	}
 	query := bson.M{"_id": id}
 
-	fmt.Printf("query %v", query)
-
 	collection, err := GetNoCloseClientCollection(DATABASE, COLLECTION)
 	if err != nil {
 		return nil, err
 	}
-	err = collection.FindOne(ctx, bson.M{"_id": id}).Decode(&vacation)
+	err = collection.FindOne(ctx, query).Decode(&vacation)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("Vacation %s not found", vacationID)

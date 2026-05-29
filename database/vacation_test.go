@@ -80,9 +80,9 @@ func TestGetFilteredVacations(t *testing.T) {
 			Description: "Best preserved Roman colosseum from the venitian empire"},
 		}
 
-		specificID, err := primitive.ObjectIDFromHex("6719116d45173ca7957bfba5")
+		specificID, idErr := primitive.ObjectIDFromHex("6719116d45173ca7957bfba5")
 
-		if err != nil {
+		if idErr != nil {
 			t.Fatalf("failed to set specific ObjectId %v", err)
 		}
 

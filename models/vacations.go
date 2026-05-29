@@ -22,13 +22,13 @@ type VacationDTO struct {
 
 // POI ...
 type POI struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" bson:"name"`
+	Description string `json:"description" bson:"description"`
 }
 
 // VacationDAO ...
 type VacationDAO struct {
-	ID               primitive.ObjectID `bson:"_id, omitempty"`
+	ID               primitive.ObjectID `bson:"_id,omitempty"`
 	City             string             `bson:"city"`
 	Country          string             `bson:"country"`
 	Food             string             `bson:"food"`
@@ -47,15 +47,6 @@ func (v VacationDTO) String() string {
 }
 func (p POI) String() string {
 	return fmt.Sprintf("Name : %s, Description: %s", p.Name, p.Description)
-}
-
-func vacationsToString(vacations []VacationDTO) []string {
-	var vacationStrings []string
-
-	for _, vac := range vacations {
-		vacationStrings = append(vacationStrings, vac.String())
-	}
-	return vacationStrings
 }
 
 // DAOToDTO translates the database retreived values to the service object
