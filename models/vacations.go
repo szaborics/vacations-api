@@ -13,6 +13,7 @@ type VacationsDTO struct {
 
 // VacationDTO ...
 type VacationDTO struct {
+	ID               string `json:"id"`
 	City             string `json:"city"`
 	Country          string `json:"country"`
 	Food             string `json:"food"`
@@ -52,6 +53,7 @@ func (p POI) String() string {
 // DAOToDTO translates the database retreived values to the service object
 func DAOToDTO(dao *VacationDAO) VacationDTO {
 	return VacationDTO{
+		ID:               dao.ID.Hex(),
 		City:             dao.City,
 		Country:          dao.Country,
 		Food:             dao.Food,

@@ -54,11 +54,9 @@ func mongodbConnect(db string, col string) (*mongo.Collection, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	uri := os.Getenv("MONGODB_URI")
-	docs := "www.mongodb.com/docs/drivers/go/current/"
 	if uri == "" {
-		log.Fatal("Set your 'MONGODB_URI' environment variable. " +
-			"See: " + docs +
-			"usage-examples/#environment-variable")
+		uri = "mongodb://localhost:27017"
+		log.Println("MONGODB_URI not set, defaulting to", uri)
 	}
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)

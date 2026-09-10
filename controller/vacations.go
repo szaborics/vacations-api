@@ -14,7 +14,9 @@ import (
 // VacationController handles vacation requests
 type VacationController interface {
 	GetFiltered(w http.ResponseWriter, r *http.Request)
+	GetByID(w http.ResponseWriter, r *http.Request)
 	HandleRoot(w http.ResponseWriter, r *http.Request)
+	HandleHealth(w http.ResponseWriter, r *http.Request)
 }
 
 // VacationControllerImpl implements VacationController
@@ -30,6 +32,13 @@ func NewVacationController() VacationController {
 }
 
 var _ VacationController = (*VacationControllerImpl)(nil)
+
+// healthCheck returns a 200 OK response if the api is up and running without issues and is able to handle request/responses
+func (v *VacationControllerImpl) HandleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
 
 // GetFiltered handles GET /vacations — returns all vacations, optionally filtered by ?country= and/or ?city=
 // Returns 200 with an empty array when no results match the filter.
@@ -50,8 +59,26 @@ func (v *VacationControllerImpl) GetFiltered(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(filteredVacations); err != nil {
 		sendJSONError(w, http.StatusInternalServerError, "Failed to encode response")
+		return
 	}
 
+}
+
+func (v *VacationControllerImpl) GetByID(w http.ResponseWriter, r *http.Request) {
+	vacationID := r.PathValue("id")
+
+	vacation, err := v.vacationService.GetVacationByID(r.Context(), vacationID)
+	if err != nil {
+		sendJSONError(w, http.StatusNotFound, "Not Found")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(vacation); err != nil {
+		sendJSONError(w, http.StatusInternalServerError, "Failed to encode response")
+		return
+	}
 }
 
 // HandleRoot handles GET /
