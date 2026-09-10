@@ -1,3 +1,6 @@
+//go:build integration
+
+// integration tests, run ad-hoc via go test -tags=integration ./database/...
 package database
 
 import (

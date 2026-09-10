@@ -1,5 +1,17 @@
 # Changelog
 
+## (08/04/2026)
+
+- Add `GET /health` endpoint returning `{"status":"ok"}`
+- Add `GET /vacations/{id}` endpoint to fetch a single vacation by its MongoDB ID
+- Add `GetVacationByID` to the service layer and wire it through to the controller
+- Fix `VacationDTO` missing `id` field — responses now include the MongoDB-generated ID so callers can use it in subsequent requests
+- Default `MONGODB_URI` to `mongodb://localhost:27017` when not set, so the server starts without needing the env var during local development
+- Fix seed script (`scripts/seedVacations.mongodb.js`) — was defined as an arrow function that never executed and used the wrong database name; rewritten as plain executable statements targeting the correct `vacationsApi` database
+- Add `CURRICULUM.md` — personal learning roadmap with staged tasks, re-orientation checklist, and a done-state checklist for the finished API
+- Add `//go:build integration` tag to `database/vacation_test.go` so it is excluded from `go test ./...` and only runs when explicitly targeting a live database
+- Delete `database/mocks/testifymock_vacation_test.go` — was testing the testify mock framework itself rather than application code
+
 ## (01/07/2025)
 
 - restructured tests to use mocks

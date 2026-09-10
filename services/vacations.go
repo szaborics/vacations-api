@@ -10,6 +10,7 @@ import (
 // VacationService manages vacations
 type VacationService interface {
 	Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error)
+	GetVacationByID(ctx context.Context, id string) (*models.VacationDTO, error)
 }
 
 // VacationServiceImpl implements VacationsService
@@ -40,4 +41,16 @@ func (service *VacationServiceImpl) Get(ctx context.Context, filter *models.Vaca
 
 	return vacationsDTOs, nil
 
+}
+
+// GetVacationByID retrieves a vacation by its ID
+func (service *VacationServiceImpl) GetVacationByID(ctx context.Context, id string) (*models.VacationDTO, error) {
+	vacationDAO, err := service.database.GetVacationByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	vacationDTO := models.DAOToDTO(vacationDAO)
+
+	return &vacationDTO, nil
 }
