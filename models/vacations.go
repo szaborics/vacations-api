@@ -62,6 +62,16 @@ func DAOToDTO(dao *VacationDAO) VacationDTO {
 	}
 }
 
+func DTOToDAO(dto *VacationDTO) VacationDAO {
+	return VacationDAO{
+		City:             dto.City,
+		Country:          dto.Country,
+		Food:             dto.Food,
+		Wine:             dto.Wine,
+		PointsOfInterest: dto.PointsOfInterest,
+	}
+}
+
 // DAOsToDTOs translates multiple DAOs to DTOs
 func DAOsToDTOs(daos []VacationDAO) []VacationDTO {
 	dtos := make([]VacationDTO, len(daos))

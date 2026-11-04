@@ -89,8 +89,6 @@ func (db *MongoDB) InsertVacation(ctx context.Context, vacation models.VacationD
 		return primitive.NilObjectID, err
 	}
 
-	vacation.ID = primitive.NewObjectID()
-
 	res, err := collection.InsertOne(ctx, vacation)
 	if err != nil {
 		return primitive.NilObjectID, err

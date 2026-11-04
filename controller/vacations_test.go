@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,11 +37,65 @@ var croatiaVacations = []models.VacationDTO{
 	},
 }
 
+var singleVacation = &models.VacationDTO{
+	ID: "615f5f5f5f5f5f5f5f5f5f5f", City: "Corniglia", Country: "Italy", Food: "anchovies, pesto, gelato, focaccia", PointsOfInterest: emptyPOI,
+}
+
 func allVacations() []models.VacationDTO {
 	result := make([]models.VacationDTO, 0, len(italyVacations)+len(croatiaVacations))
 	result = append(result, italyVacations...)
 	result = append(result, croatiaVacations...)
 	return result
+}
+
+func TestGetById(t *testing.T) {
+	tests := []struct {
+		name           string
+		vacationID     string
+		mockReturn     *models.VacationDTO
+		mockError      error
+		expectedStatus int
+		checkBody      func(t *testing.T, body string)
+	}{
+		{
+			name:           "valid id returns vacation",
+			vacationID:     "615f5f5f5f5f5f5f5f5f5f5f",
+			mockReturn:     singleVacation,
+			expectedStatus: http.StatusOK,
+			checkBody: func(t *testing.T, body string) {
+				var got models.VacationDTO
+				assert.NoError(t, json.Unmarshal([]byte(body), &got))
+				assert.Equal(t, "615f5f5f5f5f5f5f5f5f5f5f", got.ID)
+				assert.Equal(t, "Corniglia", got.City)
+			},
+		},
+		{
+			name:           "invalid or missing id returns 404",
+			vacationID:     "000000000000000000000000",
+			mockError:      errors.New("vacation not found"),
+			expectedStatus: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSvc := svcmocks.NewVacationService(t)
+			mockSvc.On("GetVacationByID", mock.Anything, tt.vacationID).Return(tt.mockReturn, tt.mockError)
+
+			ctrl := &VacationControllerImpl{vacationService: mockSvc}
+
+			req := httptest.NewRequest(http.MethodGet, "/vacations/"+tt.vacationID, nil)
+			req.SetPathValue("id", tt.vacationID)
+			rr := httptest.NewRecorder()
+
+			ctrl.GetByID(rr, req)
+
+			assert.Equal(t, tt.expectedStatus, rr.Code)
+			if tt.checkBody != nil {
+				tt.checkBody(t, rr.Body.String())
+			}
+		})
+	}
 }
 
 func TestGetFiltered(t *testing.T) {
@@ -144,6 +199,81 @@ func TestGetFiltered(t *testing.T) {
 			rr := httptest.NewRecorder()
 
 			ctrl.GetFiltered(rr, req)
+
+			assert.Equal(t, tt.expectedStatus, rr.Code)
+			if tt.checkBody != nil {
+				tt.checkBody(t, rr.Body.String())
+			}
+		})
+	}
+}
+
+// add Create Vacation unit tests
+func TestCreateVacation(t *testing.T) {
+	tests := []struct {
+		name           string
+		body           string
+		mockReturn     string
+		mockError      error
+		expectedStatus int
+		checkBody      func(t *testing.T, body string)
+	}{
+		{
+			name:           "successful creation of vacation, 201 status, id returned",
+			body:           `{"city":"Eger","country":"Hungary"}`,
+			mockReturn:     "615f5f5f5f5f5f5f5f5f5f5f",
+			expectedStatus: 201,
+			checkBody: func(t *testing.T, body string) {
+				var got models.VacationDTO
+				assert.NoError(t, json.Unmarshal([]byte(body), &got))
+				assert.Equal(t, "615f5f5f5f5f5f5f5f5f5f5f", got.ID)
+				assert.Equal(t, "Eger", got.City)
+			},
+		},
+		{
+			name:           "failed to create because City is not set",
+			body:           `{"country":"Hungary"}`,
+			expectedStatus: 422,
+			checkBody: func(t *testing.T, body string) {
+				var got map[string]string
+				assert.NoError(t, json.Unmarshal([]byte(body), &got))
+				assert.Equal(t, "City and Country are required", got["error"])
+			},
+		},
+		{
+			name:           "failed to create because Country is not set",
+			body:           `{"city":"Eger"}`,
+			expectedStatus: 422,
+			checkBody: func(t *testing.T, body string) {
+				var got map[string]string
+				assert.NoError(t, json.Unmarshal([]byte(body), &got))
+				assert.Equal(t, "City and Country are required", got["error"])
+			},
+		},
+		{
+			name:           "failed with a 500 error",
+			body:           `{"city":"Eger","country":"Hungary"}`,
+			mockReturn:     "",
+			mockError:      errors.New("Database Failed"),
+			expectedStatus: 500,
+			checkBody: func(t *testing.T, body string) {
+				var got map[string]string
+				assert.NoError(t, json.Unmarshal([]byte(body), &got))
+				assert.Equal(t, "Internal Server Error", got["error"])
+			},
+		}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSvc := svcmocks.NewVacationService(t)
+			if tt.mockReturn != "" || tt.mockError != nil {
+				mockSvc.On("CreateVacation", mock.Anything, mock.Anything).Return(tt.mockReturn, tt.mockError)
+			}
+			ctrl := &VacationControllerImpl{vacationService: mockSvc}
+			req := httptest.NewRequest(http.MethodPost, "/vactations", strings.NewReader(tt.body))
+			rr := httptest.NewRecorder()
+
+			ctrl.CreateVacation(rr, req)
 
 			assert.Equal(t, tt.expectedStatus, rr.Code)
 			if tt.checkBody != nil {

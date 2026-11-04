@@ -90,7 +90,7 @@ If `go test ./...` and `go run main.go` both work, you're ready to move on.
 
 ---
 
-## Stage 2 — Health check (your warmup every time you restart)
+## Stage 2 — Health check (your warmup every time you restart) (done ✅)
 
 **Why:** A health endpoint is the simplest possible handler — it takes no input, calls nothing, and returns a fixed response. It is the perfect warm-up task. Every real API has one.
 
@@ -108,7 +108,7 @@ If `go test ./...` and `go run main.go` both work, you're ready to move on.
 
 ---
 
-## Stage 3 — Read a single vacation by ID
+## Stage 3 — Read a single vacation by ID  (done ✅)
 
 **Why:** This introduces path parameters (`/vacations/{id}`) and a new type of error — "not found". It also teaches you how to propagate a feature through all three layers.
 

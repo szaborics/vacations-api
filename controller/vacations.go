@@ -15,6 +15,7 @@ import (
 type VacationController interface {
 	GetFiltered(w http.ResponseWriter, r *http.Request)
 	GetByID(w http.ResponseWriter, r *http.Request)
+	CreateVacation(w http.ResponseWriter, r *http.Request)
 	HandleRoot(w http.ResponseWriter, r *http.Request)
 	HandleHealth(w http.ResponseWriter, r *http.Request)
 }
@@ -79,6 +80,30 @@ func (v *VacationControllerImpl) GetByID(w http.ResponseWriter, r *http.Request)
 		sendJSONError(w, http.StatusInternalServerError, "Failed to encode response")
 		return
 	}
+}
+
+func (v *VacationControllerImpl) CreateVacation(w http.ResponseWriter, r *http.Request) {
+	var vacation *models.VacationDTO
+	if err := json.NewDecoder(r.Body).Decode(&vacation); err != nil {
+		sendJSONError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	//validate required fields
+	if vacation.City == "" || vacation.Country == "" {
+		sendJSONError(w, http.StatusUnprocessableEntity, "City and Country are required")
+		return
+	}
+	id, err := v.vacationService.CreateVacation(r.Context(), vacation)
+	if err != nil {
+		sendJSONError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	vacation.ID = id
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(vacation)
+
 }
 
 // HandleRoot handles GET /
