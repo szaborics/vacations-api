@@ -44,6 +44,64 @@ func (_m *VacationService) Get(ctx context.Context, filter *models.VacationFilte
 	return r0, r1
 }
 
+// CreateVacation provides a mock function with given fields: ctx, vacationDTO
+func (_m *VacationService) CreateVacation(ctx context.Context, vacationDTO *models.VacationDTO) (string, error) {
+	ret := _m.Called(ctx, vacationDTO)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateVacation")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.VacationDTO) (string, error)); ok {
+		return rf(ctx, vacationDTO)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *models.VacationDTO) string); ok {
+		r0 = rf(ctx, vacationDTO)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *models.VacationDTO) error); ok {
+		r1 = rf(ctx, vacationDTO)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetVacationByID provides a mock function with given fields: ctx, id
+func (_m *VacationService) GetVacationByID(ctx context.Context, id string) (*models.VacationDTO, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVacationByID")
+	}
+
+	var r0 *models.VacationDTO
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*models.VacationDTO, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *models.VacationDTO); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.VacationDTO)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewVacationService creates a new instance of VacationService. It also registers a testing interface on the mock and a cleanup function to assert the mock expectations.
 // The first argument is typically a *testing.T value.
 func NewVacationService(t interface {

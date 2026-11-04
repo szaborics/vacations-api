@@ -11,6 +11,7 @@ import (
 type VacationService interface {
 	Get(ctx context.Context, filter *models.VacationFilter) ([]models.VacationDTO, error)
 	GetVacationByID(ctx context.Context, id string) (*models.VacationDTO, error)
+	CreateVacation(ctx context.Context, vacation *models.VacationDTO) (string, error)
 }
 
 // VacationServiceImpl implements VacationsService
@@ -53,4 +54,16 @@ func (service *VacationServiceImpl) GetVacationByID(ctx context.Context, id stri
 	vacationDTO := models.DAOToDTO(vacationDAO)
 
 	return &vacationDTO, nil
+}
+
+func (service *VacationServiceImpl) CreateVacation(ctx context.Context, vacationDTO *models.VacationDTO) (string, error) {
+	vacationDAO := models.DTOToDAO(vacationDTO)
+
+	vacationID, err := service.database.InsertVacation(ctx, vacationDAO)
+
+	if err != nil {
+		return "", err
+	}
+	return vacationID.Hex(), nil
+
 }

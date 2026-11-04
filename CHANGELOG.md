@@ -1,5 +1,18 @@
 # Changelog
 
+## (11/04/2026)
+
+- Add `POST /vacations` endpoint — creates a vacation, validates required fields (city, country), returns `201` with the full vacation object including generated ID
+- Add `GET /vacations/{id}` endpoint — returns a single vacation by MongoDB ID or `404` if not found
+- Fix `VacationDTO` missing `id` field — all responses now include the MongoDB-generated ID
+- Fix seed script — was an uncalled arrow function pointing at the wrong database name; rewritten as plain executable statements
+- Default `MONGODB_URI` to `mongodb://localhost:27017` so the server starts without env var during local development
+- Remove manual ID generation in `InsertVacation` — MongoDB generates the ID on insert
+- Add `DTOToDAO` conversion helper in `models/vacations.go`
+- Add `CreateVacation` and `GetVacationByID` to the service layer with unit tests
+- Update service and controller mocks to match expanded interfaces
+- Add `CURRICULUM.md` personal learning roadmap
+
 ## (08/04/2026)
 
 - Add `GET /health` endpoint returning `{"status":"ok"}`

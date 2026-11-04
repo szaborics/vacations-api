@@ -18,6 +18,7 @@ func main() {
 	mux.HandleFunc("GET /health", vacationController.HandleHealth)
 	mux.HandleFunc("GET /vacations", vacationController.GetFiltered)
 	mux.HandleFunc("GET /vacations/{id}", vacationController.GetByID)
+	mux.HandleFunc("POST /vacations", vacationController.CreateVacation)
 
 	fmt.Println("Vacations API Server Listening on port 8080")
 

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	dbmocks "github.com/szaborics/vacations-api/database/mocks"
 	"github.com/szaborics/vacations-api/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Seed data matching scripts/seedVacations.mongodb.js
@@ -100,6 +101,49 @@ func TestGet(t *testing.T) {
 				assert.Equal(t, tt.dbReturn[0].Wine, result[0].Wine)
 				assert.Equal(t, tt.dbReturn[0].PointsOfInterest, result[0].PointsOfInterest)
 			}
+		})
+	}
+}
+
+func TestCreateVacation(t *testing.T) {
+	fakeID := primitive.NewObjectID()
+
+	tests := []struct {
+		name    string
+		input   *models.VacationDTO
+		dbID    primitive.ObjectID
+		dbError error
+		wantID  string
+		wantErr bool
+	}{
+		{
+			name:   "successful insert returns hex ID",
+			input:  &models.VacationDTO{City: "Split", Country: "Croatia"},
+			dbID:   fakeID,
+			wantID: fakeID.Hex(),
+		}, {
+			name:    "database error propagated",
+			input:   &models.VacationDTO{City: "Split", Country: "Croatia"},
+			dbError: errors.New("insert failed"),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB := dbmocks.NewDatabase(t)
+			mockDB.On("InsertVacation", mock.Anything, mock.Anything).Return(tt.dbID, tt.dbError)
+
+			svc := &VacationServiceImpl{database: mockDB}
+			result, err := svc.CreateVacation(context.Background(), tt.input)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Empty(t, result)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantID, result)
 		})
 	}
 }
